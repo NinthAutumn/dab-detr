@@ -54,20 +54,18 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        # wandb.log({f"train/{k}":v for k,v in meters.items()}, step=step)
-        step+=1
+        
         with torch.cuda.amp.autocast(enabled=args.amp):
             if need_tgt_for_training:
                 outputs = model(samples, targets)
             else:
                 outputs = model(samples)
             loss_dict = criterion(outputs, targets)
-            print(loss_dict)
 
             weight_dict = criterion.weight_dict
             # import ipdb; ipdb.set_trace()
             losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
-
+        
         # slprint(outputs, 'outputs')
         # pred_logits: 2, 100, 92
         # pred_boxes: 2, 100, 4
@@ -84,7 +82,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         losses_reduced_scaled = sum(loss_dict_reduced_scaled.values())
 
         loss_value = losses_reduced_scaled.item()
-        
+        wandb.log({f"train/{k}":v for k,v in loss_dict.items()}, step=step)
+        wandb.log({f"train/loss":loss_value}, step=step)
+        step+=1
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             print(loss_dict_reduced)
