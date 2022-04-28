@@ -197,6 +197,9 @@ def main(args):
     logger = setup_logger(output=os.path.join(args.output_dir, 'info.txt'), distributed_rank=args.rank, color=False, name="DAB-DETR")
     logger.info("git:\n  {}\n".format(utils.get_sha()))
     logger.info("Command: "+' '.join(sys.argv))
+    if args.save_log:
+        wandb.init()
+
     if args.rank == 0:
         save_json_path = os.path.join(args.output_dir, "config.json")
         # print("args:", vars(args))
@@ -328,7 +331,6 @@ def main(args):
     print("Start training")
     start_time = time.time()
     step = 1
-    wandb.init()
     for epoch in range(args.start_epoch, args.epochs):
         epoch_start_time = time.time()
         if args.distributed:
