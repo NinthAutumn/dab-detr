@@ -37,7 +37,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     print_freq = 10
 
     _cnt = 0
-    
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header, logger=logger):
         # slprint(samples, 'samples') 
         #     # {'tensors.shape': torch.Size([2, 3, 1024, 768]), 'mask.shape': torch.Size([2, 1024, 768])}
@@ -55,7 +54,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-
+        print(samples,targets)
+        # wandb.log({f"train/{k}":v for k,v in meters.items()}, step=step)
+        step+=1
         with torch.cuda.amp.autocast(enabled=args.amp):
             if need_tgt_for_training:
                 outputs = model(samples, targets)
@@ -84,7 +85,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         loss_value = losses_reduced_scaled.item()
         
-        step+=1
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             print(loss_dict_reduced)
@@ -124,6 +124,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
     resstat = {k: meter.global_avg for k, meter in metric_logger.meters.items() if meter.count > 0}
+
     if getattr(criterion, 'loss_weight_decay', False):
         resstat.update({f'weight_{k}': v for k,v in criterion.weight_dict.items()})
     return resstat
