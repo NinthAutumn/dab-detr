@@ -328,6 +328,7 @@ def main(args):
     print("Start training")
     start_time = time.time()
     step = 1
+    wandb.init()
     for epoch in range(args.start_epoch, args.epochs):
         epoch_start_time = time.time()
         if args.distributed:
