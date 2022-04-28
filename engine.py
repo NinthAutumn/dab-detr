@@ -54,7 +54,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        print(samples,targets)
         # wandb.log({f"train/{k}":v for k,v in meters.items()}, step=step)
         step+=1
         with torch.cuda.amp.autocast(enabled=args.amp):
@@ -62,8 +61,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                 outputs = model(samples, targets)
             else:
                 outputs = model(samples)
-        
             loss_dict = criterion(outputs, targets)
+            print(loss_dict)
+
             weight_dict = criterion.weight_dict
             # import ipdb; ipdb.set_trace()
             losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
