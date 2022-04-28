@@ -15,12 +15,11 @@ import wandb
 import util.misc as utils
 from datasets.coco_eval import CocoEvaluator
 from datasets.panoptic_eval import PanopticEvaluator
-ind = 1
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, max_norm: float = 0, 
-                    wo_class_error=False, lr_scheduler=None, args=None, logger=None, ema_m=None):
+                    wo_class_error=False, lr_scheduler=None, args=None, logger=None, ema_m=None,step=1):
     scaler = torch.cuda.amp.GradScaler(enabled=args.amp)
 
     try:
@@ -38,6 +37,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     print_freq = 10
 
     _cnt = 0
+    
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header, logger=logger):
         # slprint(samples, 'samples') 
         #     # {'tensors.shape': torch.Size([2, 3, 1024, 768]), 'mask.shape': torch.Size([2, 1024, 768])}
@@ -83,8 +83,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         losses_reduced_scaled = sum(loss_dict_reduced_scaled.values())
 
         loss_value = losses_reduced_scaled.item()
-        wandb.log({f"train/loss":loss_value}, step=ind)
-        ind+=1
+        wandb.log({f"train/loss":loss_value}, step=step)
+        step+=1
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             print(loss_dict_reduced)
