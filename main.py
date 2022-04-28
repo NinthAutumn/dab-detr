@@ -376,7 +376,8 @@ def main(args):
                      **{f'test_{k}': v for k, v in test_stats.items()},
                      'epoch': epoch,
                      'n_parameters': n_parameters}
-
+        wandb.log({f"train/{k}":v for k,v in train_stats.items()}, step=step)
+        wandb.log({f"test/{k}":v for k,v in test_stats.items()}, step=step)
         epoch_time = time.time() - epoch_start_time
         epoch_time_str = str(datetime.timedelta(seconds=int(epoch_time)))
         log_stats['epoch_time'] = epoch_time_str

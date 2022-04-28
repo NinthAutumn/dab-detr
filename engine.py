@@ -83,7 +83,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         losses_reduced_scaled = sum(loss_dict_reduced_scaled.values())
 
         loss_value = losses_reduced_scaled.item()
-        wandb.log({f"train/loss":loss_value}, step=step)
+        
         step+=1
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
