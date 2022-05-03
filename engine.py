@@ -116,8 +116,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                 print("BREAK!"*5)
                 break
 
-    wandb.log({f"train/{k}":v for k,v in loss_dict.items()})
-    wandb.log({f"train/loss":loss_value})
+ 
     step+=1
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
