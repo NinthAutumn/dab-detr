@@ -82,9 +82,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         losses_reduced_scaled = sum(loss_dict_reduced_scaled.values())
 
         loss_value = losses_reduced_scaled.item()
-        wandb.log({f"train/{k}":v for k,v in loss_dict.items()}, step=step)
-        wandb.log({f"train/loss":loss_value}, step=step)
-        step+=1
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             print(loss_dict_reduced)
@@ -112,14 +109,16 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         if 'class_error' in loss_dict_reduced:
             metric_logger.update(class_error=loss_dict_reduced['class_error'])
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
-
+        
         _cnt += 1
         if args.debug:
             if _cnt % 15 == 0:
                 print("BREAK!"*5)
                 break
 
-
+    wandb.log({f"train/{k}":v for k,v in loss_dict.items()})
+    wandb.log({f"train/loss":loss_value})
+    step+=1
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
@@ -226,7 +225,6 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                     bbox: Tensor(K, 4)
                     idx: list(len: K)
                 tgt: dict.
-
                 """
                 # compare gt and res (after postprocess)
                 gt_bbox = tgt['boxes']
